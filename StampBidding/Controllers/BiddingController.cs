@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Web;
 using StampBidding.Models;
+using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
+using System.Text;
 
 namespace StampBidding.Controllers
 {
@@ -48,8 +52,6 @@ namespace StampBidding.Controllers
         // GET: Bidding/Create
         public IActionResult Create()
         {
-            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id");
-            ViewData["UserId"] = new SelectList(_context.Users, "Uuid", "Uuid");
             return View();
         }
 
@@ -58,17 +60,30 @@ namespace StampBidding.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ItemId,Date,Price,UserId")] Bidding bidding)
+        public async Task<IActionResult> Create(IFormFile file)
         {
-            if (ModelState.IsValid)
+            if (file.Length > 0)
             {
-                _context.Add(bidding);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                string outputtext = "";
+                var filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), file.FileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+                using(PdfReader reader = new PdfReader(filePath))
+                {
+                    for (int page = 1;  page <= reader.NumberOfPages; page++)
+                    {
+                        ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                        string text = PdfTextExtractor.GetTextFromPage(reader, page, strategy);
+                        text = Encoding.UTF8.GetString(ASCIIEncoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(text)));
+                        outputtext = text.ToString();
+                    }
+                }
+                System.IO.File.Delete(filePath);
+                outputtext = outputtext;
             }
-            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id", bidding.ItemId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Uuid", "Uuid", bidding.UserId);
-            return View(bidding);
+            return View();
         }
 
         // GET: Bidding/Edit/5

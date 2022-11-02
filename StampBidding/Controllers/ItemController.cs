@@ -19,9 +19,14 @@ namespace StampBidding.Controllers
         }
 
         // GET: Item
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int id)
         {
-            var bidingSystemContext = _context.Items.Include(i => i.Auction).Include(i => i.Buyer).Include(i => i.Receipt).Include(i => i.Seller).Include(i => i.Status);
+            if (id.ToString() == null || _context.Items == null)
+            {
+                return NotFound();
+            }
+            StampBidding.Models.BidingSystemContext db = new BidingSystemContext();
+            var bidingSystemContext = _context.Items.Include(i => i.Auction).Include(i => i.Buyer).Include(i => i.Receipt).Include(i => i.Seller).Include(i => i.Status).Where(i => i.AuctionId == id);
             return View(await bidingSystemContext.ToListAsync());
         }
 

@@ -16,7 +16,7 @@ namespace StampBidding.Models
 
         public string Uuid { get; set; } = null!;
         public int RoleId { get; set; }
-        public string Username { get; set; } = null!;
+        public int MemberId { get; set; }
         public string Firstname { get; set; } = null!;
         public string Lastname { get; set; } = null!;
         public string Email { get; set; } = null!;
@@ -28,6 +28,7 @@ namespace StampBidding.Models
         public string Street { get; set; } = null!;
         public int Housenumber { get; set; }
         public string AddressSuffix { get; set; } = null!;
+        public string PhoneNumber { get; set; }
 
         public virtual Role Role { get; set; } = null!;
         public virtual ICollection<Auction> Auctions { get; set; }

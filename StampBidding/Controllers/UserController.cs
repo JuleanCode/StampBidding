@@ -56,7 +56,7 @@ namespace StampBidding.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Uuid,RoleId,Username,Firstname,Lastname,Email,Password,Country,Provence,City,PostalCode,Street,Housenumber,AddressSuffix")] User user)
+        public async Task<IActionResult> Create([Bind("Uuid,RoleId,MemberId,Firstname,Lastname,Email,Password,Country,Provence,City,PostalCode,Street,Housenumber,AddressSuffix,PhoneNumber")] User user)
         {
             if (ModelState.IsValid)
             {
@@ -90,7 +90,7 @@ namespace StampBidding.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Uuid,RoleId,Username,Firstname,Lastname,Email,Password,Country,Provence,City,PostalCode,Street,Housenumber,AddressSuffix")] User user)
+        public async Task<IActionResult> Edit(string id, [Bind("Uuid,RoleId,MemberId,Firstname,Lastname,Email,Password,Country,Provence,City,PostalCode,Street,Housenumber,AddressSuffix,PhoneNumber")] User user)
         {
             if (id != user.Uuid)
             {
