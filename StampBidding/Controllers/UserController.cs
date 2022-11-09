@@ -58,7 +58,7 @@ namespace StampBidding.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Uuid,RoleId,MemberId,Firstname,Lastname,Email,Password,Country,Provence,City,PostalCode,Street,Housenumber,AddressSuffix,PhoneNumber")] User user)
         {
-            if (ModelState.IsValid)
+            if (true)
             {
                 _context.Add(user);
                 await _context.SaveChangesAsync();
