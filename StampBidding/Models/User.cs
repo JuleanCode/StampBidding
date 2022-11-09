@@ -28,7 +28,7 @@ namespace StampBidding.Models
         public string Street { get; set; } = null!;
         public int Housenumber { get; set; }
         public string AddressSuffix { get; set; } = null!;
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = null!;
 
         public virtual Role Role { get; set; } = null!;
         public virtual ICollection<Auction> Auctions { get; set; }

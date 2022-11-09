@@ -10,11 +10,11 @@ namespace StampBidding.Models
         public BidingSystemContext()
         {
         }
+
         public BidingSystemContext(DbContextOptions<BidingSystemContext> options)
             : base(options)
         {
         }
-        
 
         public virtual DbSet<Auction> Auctions { get; set; } = null!;
         public virtual DbSet<Bidding> Biddings { get; set; } = null!;
@@ -28,9 +28,12 @@ namespace StampBidding.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=John;Integrated Security=True");
+            }
         }
-              
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -104,19 +107,21 @@ namespace StampBidding.Models
 
                 entity.HasIndex(e => e.StatusId, "IX_Items_StatusId");
 
+                entity.Property(e => e.Name)
+                    .HasMaxLength(450)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.Auction)
                     .WithMany(p => p.Items)
                     .HasForeignKey(d => d.AuctionId);
 
                 entity.HasOne(d => d.Buyer)
                     .WithMany(p => p.ItemBuyers)
-                    .HasForeignKey(d => d.BuyerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
+                    .HasForeignKey(d => d.BuyerId);
 
                 entity.HasOne(d => d.Receipt)
                     .WithMany(p => p.Items)
-                    .HasForeignKey(d => d.ReceiptId)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
+                    .HasForeignKey(d => d.ReceiptId);
 
                 entity.HasOne(d => d.Seller)
                     .WithMany(p => p.ItemSellers)
@@ -144,9 +149,17 @@ namespace StampBidding.Models
 
                 entity.HasIndex(e => e.RoleId, "IX_Users_RoleId");
 
+                entity.Property(e => e.MemberId).HasColumnName("MemberID");
+
+                entity.Property(e => e.PhoneNumber)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
-                    .HasForeignKey(d => d.RoleId);
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Users_Roles");
             });
 
             OnModelCreatingPartial(modelBuilder);

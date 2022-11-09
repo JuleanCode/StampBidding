@@ -83,23 +83,147 @@ namespace StampBidding.Controllers
                 System.IO.File.Delete(filePath);
                 List<int> bids = new List<int>();
                 List<int> lots = new List<int>();
+                string finalmemberid = "";
                 bool loop = false;
                 foreach(var text in outputtext)
                 {
                     if (loop)
                     {
-                        var splitted = text.Split("\nADDITIONAL AND ALTERNATIVE BIDS \nAddit");
+                        List<string> numbers = new List<string>();
+                        bool fault = true;
+                        try
+                        {
+                            var splitted = text.Split("\nADDITIONAL AND ALTERNATIVE BIDS \nAddit").ToList();
+                            splitted.Remove(splitted[1]);
+                            numbers = splitted[0].Split(" ").ToList();
+                            fault = false;
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+                        if (fault)
+                        {
+                            numbers = text.Split(" ").ToList();
+                        }
+                        List<string> FullySortedNumbers = new List<string>();
+                        numbers.RemoveAll(i => i == "");
+                        foreach (var number in numbers)
+                        {
+                            if (number.Contains("\n"))
+                            {
+                                var tempsplit = number.Split("\n").ToList();
+                                tempsplit.RemoveAll(i => i == "");
+                                try
+                                {
+                                    FullySortedNumbers.Add(tempsplit[0]);
+                                }
+                                catch (Exception)
+                                {
+
+                                }
+                            }
+                            else
+                            {
+                                FullySortedNumbers.Add(number);
+                            }
+                        }
+                        for (int i = 0; i < FullySortedNumbers.Count();)
+                        {
+                            if (i % 3 == 0)
+                            {
+                                lots.Add(Int32.Parse(FullySortedNumbers[i]));
+                                i++;
+                            }
+                            string price = FullySortedNumbers[i] + FullySortedNumbers[i + 1];
+                            bids.Add(Int32.Parse(price));
+                            i = i + 2;
+                        }
+
                     }
                     else if(text.Contains("\nBLANK \nLOT \nNo \n \nBID LEAVE \nBLANK \n£"))
                     {
                         List<string> splitted = text.Split("£ p £ p £ \n \np \n").ToList();
                         splitted.Remove(splitted[0]);
                         List<string> splittedsecond = splitted[0].Split("       \nName \nAddress \nPostcode \nTelephone \nE-mail \nFor Auctioneer’s use  \nMembership Number \nI have read and agree to abide by the rules of the  \nModern British Philatelic Circle which govern  \nSignature  .............").ToList();
+                        string memberid = splittedsecond[1].Substring(splittedsecond[1].Length - 9);
+                        List<string> evalmemberId = new List<string>();
+                        List<string> splitmemberid = memberid.Split(" ").ToList();
+                        foreach(var member in splitmemberid)
+                        {
+                            if (member.Contains("\n"))
+                            {
+                                var tempsplit = member.Split("\n").ToList();
+                                tempsplit.RemoveAll(i => i == "");
+                                evalmemberId.Add(tempsplit[0]);
+                            }
+                            else
+                            {
+                                evalmemberId.Add(member);
+                            }
+                        }
+                        try
+                        {
+                            evalmemberId.RemoveAll(i => i == "");
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+                        foreach (var eval in evalmemberId)
+                        {
+                            finalmemberid = finalmemberid+eval;
+                        }
                         splittedsecond.Remove(splittedsecond[1]);
                         List<string> numbers = splittedsecond[0].Split(" ").ToList();
-                        var splittednumbers = numbers[0].Split(" ");
+                        List<string> FullySortedNumbers = new List<string>();
+                        numbers.RemoveAll(i => i == "");
+                        foreach(var number in numbers)
+                        {
+                            if (number.Contains("\n"))
+                            {
+                                var tempsplit = number.Split("\n").ToList();
+                                tempsplit.RemoveAll(i => i == "");
+                                try
+                                {
+                                    FullySortedNumbers.Add(tempsplit[0]);
+                                }
+                                catch (Exception)
+                                {
+
+                                }
+                            }
+                            else
+                            {
+                                FullySortedNumbers.Add(number);
+                            }
+                        }
+                        for (int i = 0; i < FullySortedNumbers.Count();)
+                        {
+                            if (i % 3 == 0)
+                            {
+                                lots.Add(Int32.Parse(FullySortedNumbers[i]));
+                                i++;
+                            }
+                            string price = FullySortedNumbers[i] + FullySortedNumbers[i + 1];
+                            bids.Add(Int32.Parse(price));
+                            i = i + 2;
+                        }
                         loop = true;
                     }
+                }
+                var currentuser = _context.Users.First(i => i.MemberId == Int32.Parse(finalmemberid));
+                for (int i = 0; i < lots.Count; i++)
+                {
+                    Bidding bidding = new Bidding
+                    {
+                        ItemId = lots[i],
+                        Date = DateTime.Now,
+                        Price = bids[i].ToString(),
+                        UserId = currentuser.Uuid
+                    };
+                    _context.Add(bidding);
+                    await _context.SaveChangesAsync();
                 }
             }
             return View();
