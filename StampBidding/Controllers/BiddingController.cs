@@ -64,7 +64,7 @@ namespace StampBidding.Controllers
         {
             if (file.Length > 0)
             {
-                string outputtext = "";
+                List<string> outputtext = new List<string>();
                 var filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), file.FileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
@@ -77,11 +77,30 @@ namespace StampBidding.Controllers
                         ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
                         string text = PdfTextExtractor.GetTextFromPage(reader, page, strategy);
                         text = Encoding.UTF8.GetString(ASCIIEncoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(text)));
-                        outputtext = text.ToString();
+                        outputtext.Add(text.ToString());
                     }
                 }
                 System.IO.File.Delete(filePath);
-                outputtext = outputtext;
+                List<int> bids = new List<int>();
+                List<int> lots = new List<int>();
+                bool loop = false;
+                foreach(var text in outputtext)
+                {
+                    if (loop)
+                    {
+                        var splitted = text.Split("\nADDITIONAL AND ALTERNATIVE BIDS \nAddit");
+                    }
+                    else if(text.Contains("\nBLANK \nLOT \nNo \n \nBID LEAVE \nBLANK \n£"))
+                    {
+                        List<string> splitted = text.Split("£ p £ p £ \n \np \n").ToList();
+                        splitted.Remove(splitted[0]);
+                        List<string> splittedsecond = splitted[0].Split("       \nName \nAddress \nPostcode \nTelephone \nE-mail \nFor Auctioneer’s use  \nMembership Number \nI have read and agree to abide by the rules of the  \nModern British Philatelic Circle which govern  \nSignature  .............").ToList();
+                        splittedsecond.Remove(splittedsecond[1]);
+                        List<string> numbers = splittedsecond[0].Split(" ").ToList();
+                        var splittednumbers = numbers[0].Split(" ");
+                        loop = true;
+                    }
+                }
             }
             return View();
         }
