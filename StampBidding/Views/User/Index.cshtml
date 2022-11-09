@@ -103,9 +103,7 @@
                 @Html.DisplayFor(modelItem => item.Role.Id)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Uuid">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Uuid">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Uuid">Delete</a>
+                <a asp-action="Receipt" asp-route-id="@item.Uuid">Get receipt</a>
             </td>
         </tr>
 }
